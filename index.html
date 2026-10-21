@@ -24,6 +24,7 @@
         <h2>Novo treino</h2>
         <input id="workoutName" placeholder="Nome do treino, ex: Treino A">
         <button id="createWorkout">Criar treino</button>
+        <button id="addPresets">Adicionar treinos Full Body A-E</button>
       </div>
       <div id="workoutList"></div>
     </section>
@@ -56,7 +57,23 @@
 
     <section id="data" class="tab">
       <div class="card">
-        <h2>Backup dos dados</h2>
+        <h2>Conta na nuvem</h2>
+        <input id="authEmail" type="email" placeholder="E-mail">
+        <input id="authPassword" type="password" placeholder="Senha">
+        <button id="loginButton">Entrar</button>
+        <button id="signupButton">Criar conta</button>
+        <button id="logoutButton" class="hidden">Sair</button>
+        <p id="authStatus">Não conectado.</p>
+      </div>
+
+      <div class="card">
+        <h2>Sincronização</h2>
+        <button id="saveCloud">Salvar na nuvem</button>
+        <button id="loadCloud">Carregar da nuvem</button>
+      </div>
+
+      <div class="card">
+        <h2>Backup local</h2>
         <button id="exportData">Exportar dados</button>
         <input type="file" id="importFile" accept=".json">
         <button id="importData">Importar dados</button>
@@ -64,6 +81,9 @@
     </section>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="presets.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

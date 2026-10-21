@@ -8,6 +8,9 @@ let data = JSON.parse(localStorage.getItem(STORE_KEY)) || {
 
 let runState = null;
 let timerInterval = null;
+let currentUser = null;
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 function save() {
   localStorage.setItem(STORE_KEY, JSON.stringify(data));
@@ -114,6 +117,27 @@ document.getElementById('createWorkout').onclick = () => {
   save();
   renderWorkouts();
   renderSelect();
+};
+
+document.getElementById('addPresets').onclick = () => {
+  let added = 0;
+
+  FULL_BODY_PRESETS.forEach(preset => {
+    const exists = data.workouts.some(w => w.name === preset.name);
+    if (!exists) {
+      data.workouts.push({
+        id: uid(),
+        name: preset.name,
+        exercises: preset.exercises.map(ex => ({ ...ex }))
+      });
+      added++;
+    }
+  });
+
+  save();
+  renderWorkouts();
+  renderSelect();
+  alert(added ? `${added} treinos adicionados!` : 'Esses treinos já estão cadastrados.');
 };
 
 function renderSelect() {
@@ -224,6 +248,8 @@ function finish() {
   document.getElementById('runner').classList.add('hidden');
   renderHistory();
   switchTab('history');
+
+  if (currentUser) saveToCloud(false);
 }
 
 function renderHistory() {
@@ -284,6 +310,105 @@ document.getElementById('importData').onclick = () => {
   reader.readAsText(file);
 };
 
+function setAuthStatus(message) {
+  document.getElementById('authStatus').textContent = message;
+}
+
+function updateAuthInterface() {
+  const logged = Boolean(currentUser);
+
+  document.getElementById('loginButton').classList.toggle('hidden', logged);
+  document.getElementById('signupButton').classList.toggle('hidden', logged);
+  document.getElementById('logoutButton').classList.toggle('hidden', !logged);
+  document.getElementById('authEmail').classList.toggle('hidden', logged);
+  document.getElementById('authPassword').classList.toggle('hidden', logged);
+
+  setAuthStatus(logged ? `Conectado: ${currentUser.email}` : 'Não conectado.');
+}
+
+document.getElementById('signupButton').onclick = async () => {
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+
+  if (!email || password.length < 6) {
+    return alert('Informe um e-mail válido e uma senha com pelo menos 6 caracteres.');
+  }
+
+  const { error } = await supabase.auth.signUp({ email, password });
+
+  if (error) return alert('Erro ao criar conta: ' + error.message);
+  alert('Conta criada! Confirme o e-mail, se o Supabase solicitar, e depois entre.');
+};
+
+document.getElementById('loginButton').onclick = async () => {
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+
+  const { data: result, error } = await supabase.auth.signInWithPassword({ email, password });
+
+  if (error) return alert('Erro ao entrar: ' + error.message);
+
+  currentUser = result.user;
+  updateAuthInterface();
+  alert('Login realizado!');
+};
+
+document.getElementById('logoutButton').onclick = async () => {
+  await supabase.auth.signOut();
+  currentUser = null;
+  updateAuthInterface();
+  alert('Você saiu da conta.');
+};
+
+async function saveToCloud(showAlert = true) {
+  if (!currentUser) return alert('Entre na sua conta primeiro.');
+
+  const { error } = await supabase
+    .from('app_data')
+    .upsert({
+      user_id: currentUser.id,
+      data: data,
+      updated_at: new Date().toISOString()
+    });
+
+  if (error) return alert('Erro ao salvar na nuvem: ' + error.message);
+  if (showAlert) alert('Treinos e histórico salvos na nuvem!');
+}
+
+document.getElementById('saveCloud').onclick = () => saveToCloud(true);
+
+document.getElementById('loadCloud').onclick = async () => {
+  if (!currentUser) return alert('Entre na sua conta primeiro.');
+
+  const { data: result, error } = await supabase
+    .from('app_data')
+    .select('data')
+    .eq('user_id', currentUser.id)
+    .maybeSingle();
+
+  if (error) return alert('Erro ao carregar: ' + error.message);
+
+  if (!result || !result.data) {
+    return alert('Nenhum backup encontrado na nuvem.');
+  }
+
+  if (!confirm('Isso substituirá os treinos e o histórico locais pelos dados da nuvem. Continuar?')) return;
+
+  data = result.data;
+  save();
+  renderWorkouts();
+  renderSelect();
+  renderHistory();
+  alert('Dados carregados da nuvem!');
+};
+
+async function checkSession() {
+  const { data: result } = await supabase.auth.getSession();
+  currentUser = result.session?.user || null;
+  updateAuthInterface();
+}
+
 renderWorkouts();
 renderSelect();
 renderHistory();
+checkSession();
