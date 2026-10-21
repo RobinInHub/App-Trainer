@@ -13,12 +13,15 @@
     <nav>
       <button data-tab="workouts" class="active">Treinos</button>
       <button data-tab="run">Treinar</button>
+      <button data-tab="records">Registros</button>
       <button data-tab="history">Histórico</button>
       <button data-tab="cloud">Nuvem</button>
     </nav>
   </header>
 
   <main>
+    <datalist id="exerciseList"></datalist>
+
     <section id="workouts" class="tab active">
       <div class="card">
         <h2>Novo treino</h2>
@@ -58,6 +61,21 @@
       </div>
     </section>
 
+    <section id="records" class="tab">
+      <div class="card">
+        <h2>Hoje</h2>
+        <p id="todayStats"></p>
+      </div>
+      <div class="card">
+        <h2>Últimos 7 dias</h2>
+        <p id="weekStats"></p>
+      </div>
+      <div class="card">
+        <h2>Exercícios por dia</h2>
+        <div id="dailyRecords"></div>
+      </div>
+    </section>
+
     <section id="history" class="tab">
       <div class="card">
         <h2>Histórico</h2>
@@ -87,6 +105,6 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>
