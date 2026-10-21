@@ -77,7 +77,8 @@ let data = JSON.parse(localStorage.getItem(STORE_KEY)) || {
 };
 
 let runState = null;
-let timerInterval = null;
+let exerciseTimer = null;
+let restTimer = null;
 let currentUser = null;
 let supabase = null;
 
@@ -87,6 +88,12 @@ function save() {
 
 function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+function formatTime(seconds) {
+  const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+  const s = String(seconds % 60).padStart(2, '0');
+  return `${m}:${s}`;
 }
 
 function switchTab(name) {
@@ -249,11 +256,16 @@ document.getElementById('startWorkout').onclick = () => {
     workoutName: workout.name,
     exerciseIndex: 0,
     setIndex: 1,
-    completedSets: 0
+    completedSets: 0,
+    elapsedSeconds: 0,
+    timerRunning: false,
+    totalExerciseSeconds: 0
   };
 
   document.getElementById('runner').classList.remove('hidden');
+  document.getElementById('restCard').classList.add('hidden');
   showCurrentExercise();
+  resetExerciseTimer();
 };
 
 function showCurrentExercise() {
@@ -265,55 +277,106 @@ function showCurrentExercise() {
     `Série ${runState.setIndex} de ${exercise.sets} • ${exercise.reps} reps • Carga: ${exercise.load || 'livre'}`;
 }
 
-function startTimer(seconds) {
-  clearInterval(timerInterval);
-  let remaining = seconds;
-  updateTimerDisplay(remaining);
+function resetExerciseTimer() {
+  clearInterval(exerciseTimer);
+  runState.elapsedSeconds = 0;
+  runState.timerRunning = false;
+  document.getElementById('timer').textContent = '00:00';
+  document.getElementById('timerLabel').textContent = 'Tempo do exercício';
+  document.getElementById('toggleTimer').textContent = 'Iniciar tempo';
+}
 
-  timerInterval = setInterval(() => {
+document.getElementById('toggleTimer').onclick = () => {
+  if (!runState) return;
+
+  if (runState.timerRunning) {
+    clearInterval(exerciseTimer);
+    runState.timerRunning = false;
+    document.getElementById('toggleTimer').textContent = 'Continuar tempo';
+    document.getElementById('timerLabel').textContent = 'Tempo pausado';
+  } else {
+    runState.timerRunning = true;
+    document.getElementById('toggleTimer').textContent = 'Pausar tempo';
+    document.getElementById('timerLabel').textContent = 'Tempo do exercício';
+
+    exerciseTimer = setInterval(() => {
+      runState.elapsedSeconds++;
+      document.getElementById('timer').textContent = formatTime(runState.elapsedSeconds);
+    }, 1000);
+  }
+};
+
+function startRest(seconds) {
+  clearInterval(restTimer);
+
+  if (!seconds || seconds <= 0) {
+    document.getElementById('restCard').classList.add('hidden');
+    return;
+  }
+
+  let remaining = seconds;
+  document.getElementById('restCard').classList.remove('hidden');
+  document.getElementById('restTimer').textContent = formatTime(remaining);
+
+  restTimer = setInterval(() => {
     remaining--;
-    updateTimerDisplay(remaining);
+    document.getElementById('restTimer').textContent = formatTime(remaining);
 
     if (remaining <= 0) {
-      clearInterval(timerInterval);
-      alert('Descanso concluído!');
+      clearInterval(restTimer);
+      document.getElementById('restCard').classList.add('hidden');
+      alert('Descanso concluído! Inicie o tempo da próxima série.');
     }
   }, 1000);
 }
 
-function updateTimerDisplay(seconds) {
-  const m = String(Math.floor(seconds / 60)).padStart(2, '0');
-  const s = String(seconds % 60).padStart(2, '0');
-  document.getElementById('timer').textContent = `${m}:${s}`;
-}
+document.getElementById('skipRest').onclick = () => {
+  clearInterval(restTimer);
+  document.getElementById('restCard').classList.add('hidden');
+};
 
 document.getElementById('completeSet').onclick = () => {
+  if (!runState) return;
+
+  clearInterval(exerciseTimer);
+  runState.timerRunning = false;
+
+  const timeSpent = runState.elapsedSeconds;
+  runState.totalExerciseSeconds += timeSpent;
+  runState.completedSets++;
+
   const workout = data.workouts.find(w => w.id === runState.workoutId);
   const exercise = workout.exercises[runState.exerciseIndex];
 
-  runState.completedSets++;
+  alert(`Série concluída!\nTempo desta série: ${formatTime(timeSpent)}`);
 
   if (runState.setIndex < exercise.sets) {
     runState.setIndex++;
     showCurrentExercise();
-    startTimer(exercise.restSeconds || 60);
+    resetExerciseTimer();
+    startRest(exercise.restSeconds || 60);
   } else if (runState.exerciseIndex < workout.exercises.length - 1) {
     runState.exerciseIndex++;
     runState.setIndex = 1;
     showCurrentExercise();
-    startTimer(exercise.restSeconds || 60);
+    resetExerciseTimer();
+    startRest(exercise.restSeconds || 60);
   } else {
     finish();
   }
 };
 
 document.getElementById('skipExercise').onclick = () => {
+  if (!runState) return;
+
+  clearInterval(exerciseTimer);
   const workout = data.workouts.find(w => w.id === runState.workoutId);
 
   if (runState.exerciseIndex < workout.exercises.length - 1) {
     runState.exerciseIndex++;
     runState.setIndex = 1;
     showCurrentExercise();
+    resetExerciseTimer();
   } else {
     finish();
   }
@@ -322,13 +385,18 @@ document.getElementById('skipExercise').onclick = () => {
 document.getElementById('finishWorkout').onclick = finish;
 
 function finish() {
-  clearInterval(timerInterval);
+  if (!runState) return;
+
+  clearInterval(exerciseTimer);
+  clearInterval(restTimer);
+  document.getElementById('restCard').classList.add('hidden');
 
   data.history.unshift({
     id: uid(),
     date: new Date().toLocaleString('pt-BR'),
     workout: runState.workoutName,
-    completedSets: runState.completedSets
+    completedSets: runState.completedSets,
+    totalExerciseSeconds: runState.totalExerciseSeconds
   });
 
   save();
@@ -354,7 +422,8 @@ function renderHistory() {
       <div class="workout-item">
         <strong>${item.workout}</strong><br>
         ${item.date}<br>
-        Séries concluídas: ${item.completedSets}
+        Séries concluídas: ${item.completedSets}<br>
+        Tempo total de exercício: ${formatTime(item.totalExerciseSeconds || 0)}
       </div>
     `;
   });
@@ -366,36 +435,6 @@ document.getElementById('clearHistory').onclick = () => {
     save();
     renderHistory();
   }
-};
-
-document.getElementById('exportData').onclick = () => {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = 'app-trainer-backup.json';
-  link.click();
-};
-
-document.getElementById('importData').onclick = () => {
-  const file = document.getElementById('importFile').files[0];
-  if (!file) return alert('Escolha um arquivo JSON.');
-
-  const reader = new FileReader();
-  reader.onload = event => {
-    try {
-      const imported = JSON.parse(event.target.result);
-      if (!imported.workouts) throw new Error();
-      data = imported;
-      save();
-      renderWorkouts();
-      renderSelect();
-      renderHistory();
-      alert('Dados importados com sucesso!');
-    } catch {
-      alert('Arquivo inválido.');
-    }
-  };
-  reader.readAsText(file);
 };
 
 function updateAuthInterface() {

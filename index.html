@@ -14,7 +14,7 @@
       <button data-tab="workouts" class="active">Treinos</button>
       <button data-tab="run">Treinar</button>
       <button data-tab="history">Histórico</button>
-      <button data-tab="data">Dados</button>
+      <button data-tab="cloud">Nuvem</button>
     </nav>
   </header>
 
@@ -22,7 +22,7 @@
     <section id="workouts" class="tab active">
       <div class="card">
         <h2>Novo treino</h2>
-        <input id="workoutName" placeholder="Nome do treino, ex: Treino A">
+        <input id="workoutName" placeholder="Nome do treino">
         <button id="createWorkout">Criar treino</button>
         <button id="addPresets">Adicionar treinos Full Body A-E</button>
       </div>
@@ -35,14 +35,25 @@
         <select id="selectWorkout"></select>
         <button id="startWorkout">Iniciar treino</button>
       </div>
+
       <div id="runner" class="hidden">
-        <h2 id="currentExercise"></h2>
-        <p id="currentInfo"></p>
-        <div id="timer">00:00</div>
-        <div class="run-buttons">
-          <button id="completeSet">Série concluída</button>
-          <button id="skipExercise">Próximo exercício</button>
-          <button id="finishWorkout">Finalizar</button>
+        <div class="card">
+          <h2 id="currentExercise"></h2>
+          <p id="currentInfo"></p>
+          <div id="timer">00:00</div>
+          <p id="timerLabel">Tempo do exercício</p>
+          <div class="run-buttons">
+            <button id="toggleTimer">Iniciar tempo</button>
+            <button id="completeSet">Série concluída</button>
+            <button id="skipExercise">Próximo exercício</button>
+            <button id="finishWorkout">Finalizar</button>
+          </div>
+        </div>
+
+        <div id="restCard" class="card hidden">
+          <h2>Descanso</h2>
+          <div id="restTimer">00:00</div>
+          <button id="skipRest">Pular descanso</button>
         </div>
       </div>
     </section>
@@ -55,7 +66,7 @@
       <div id="historyList"></div>
     </section>
 
-    <section id="data" class="tab">
+    <section id="cloud" class="tab">
       <div class="card">
         <h2>Conta na nuvem</h2>
         <input id="authEmail" type="email" placeholder="E-mail">
@@ -72,17 +83,10 @@
         <button id="saveCloud">Salvar na nuvem</button>
         <button id="loadCloud">Carregar da nuvem</button>
       </div>
-
-      <div class="card">
-        <h2>Backup local</h2>
-        <button id="exportData">Exportar dados</button>
-        <input type="file" id="importFile" accept=".json">
-        <button id="importData">Importar dados</button>
-      </div>
     </section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>
