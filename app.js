@@ -1,3 +1,73 @@
+const SUPABASE_URL = "https://rysoaghymsiyyfgpfotc.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_RLIESGfLNz0R0jlQGF4A6w_2e9HKgRV";
+
+const FULL_BODY_PRESETS = [
+  {
+    name: "Full Body A — Quadríceps e Peito",
+    exercises: [
+      { name: "Leg press 45°", sets: 3, reps: "10-12", load: "", restSeconds: 90 },
+      { name: "Supino reto na máquina", sets: 3, reps: "8-12", load: "", restSeconds: 90 },
+      { name: "Remada baixa", sets: 2, reps: "10-12", load: "", restSeconds: 75 },
+      { name: "Mesa flexora", sets: 2, reps: "12-15", load: "", restSeconds: 60 },
+      { name: "Elevação lateral", sets: 2, reps: "12-15", load: "", restSeconds: 60 },
+      { name: "Abdominal na máquina", sets: 2, reps: "12-20", load: "", restSeconds: 45 }
+    ]
+  },
+  {
+    name: "Full Body B — Costas e Posteriores",
+    exercises: [
+      { name: "Cadeira flexora", sets: 3, reps: "10-15", load: "", restSeconds: 75 },
+      { name: "Puxada com pegada neutra", sets: 3, reps: "8-12", load: "", restSeconds: 90 },
+      { name: "Supino inclinado na máquina", sets: 2, reps: "10-12", load: "", restSeconds: 75 },
+      { name: "Cadeira extensora", sets: 2, reps: "12-15", load: "", restSeconds: 60 },
+      { name: "Peck deck invertido", sets: 2, reps: "12-15", load: "", restSeconds: 60 },
+      { name: "Panturrilha na máquina", sets: 2, reps: "15-20", load: "", restSeconds: 45 }
+    ]
+  },
+  {
+    name: "Full Body C — Pernas e Ombros",
+    exercises: [
+      { name: "Hack machine ou agachamento Smith", sets: 3, reps: "8-12", load: "", restSeconds: 90 },
+      { name: "Desenvolvimento na máquina", sets: 3, reps: "8-12", load: "", restSeconds: 90 },
+      { name: "Remada unilateral", sets: 2, reps: "10-12 por lado", load: "", restSeconds: 75 },
+      { name: "Cadeira flexora", sets: 2, reps: "12-15", load: "", restSeconds: 60 },
+      { name: "Supino reto na máquina", sets: 2, reps: "10-12", load: "", restSeconds: 75 },
+      { name: "Abdominal na máquina", sets: 2, reps: "12-20", load: "", restSeconds: 45 }
+    ]
+  },
+  {
+    name: "Full Body D — Metabólico",
+    exercises: [
+      { name: "Leg press leve", sets: 2, reps: "15", load: "", restSeconds: 60 },
+      { name: "Puxada neutra", sets: 2, reps: "12-15", load: "", restSeconds: 60 },
+      { name: "Supino inclinado na máquina", sets: 2, reps: "12-15", load: "", restSeconds: 60 },
+      { name: "Mesa flexora", sets: 2, reps: "15", load: "", restSeconds: 60 },
+      { name: "Elevação lateral", sets: 2, reps: "15", load: "", restSeconds: 45 },
+      { name: "Rosca alternada", sets: 2, reps: "12-15", load: "", restSeconds: 45 },
+      { name: "Tríceps corda", sets: 2, reps: "12-15", load: "", restSeconds: 45 }
+    ]
+  },
+  {
+    name: "Full Body E — Leve",
+    exercises: [
+      { name: "Leg press leve", sets: 2, reps: "15-20", load: "", restSeconds: 60 },
+      { name: "Puxada neutra", sets: 2, reps: "12-15", load: "", restSeconds: 60 },
+      { name: "Supino na máquina", sets: 2, reps: "12-15", load: "", restSeconds: 60 },
+      { name: "Cadeira flexora", sets: 2, reps: "15", load: "", restSeconds: 60 },
+      { name: "Cadeira adutora", sets: 2, reps: "12-15", load: "", restSeconds: 45 },
+      { name: "Elevação lateral", sets: 2, reps: "15-20", load: "", restSeconds: 45 },
+      { name: "Abdominal na máquina", sets: 2, reps: "15-20", load: "", restSeconds: 45 }
+    ]
+  },
+  {
+    name: "Cardio diário",
+    exercises: [
+      { name: "Aquecimento na esteira — 5,0 a 5,5 km/h", sets: 1, reps: "10 min", load: "", restSeconds: 0 },
+      { name: "Cardio pós-treino — bicicleta ou esteira", sets: 1, reps: "20-30 min", load: "intensidade moderada", restSeconds: 0 }
+    ]
+  }
+];
+
 const STORE_KEY = 'app-trainer-data';
 
 let data = JSON.parse(localStorage.getItem(STORE_KEY)) || {
@@ -9,8 +79,7 @@ let data = JSON.parse(localStorage.getItem(STORE_KEY)) || {
 let runState = null;
 let timerInterval = null;
 let currentUser = null;
-
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let supabase = null;
 
 function save() {
   localStorage.setItem(STORE_KEY, JSON.stringify(data));
@@ -30,6 +99,25 @@ function switchTab(name) {
 document.querySelectorAll('nav button').forEach(button => {
   button.onclick = () => switchTab(button.dataset.tab);
 });
+
+function setAuthStatus(message) {
+  document.getElementById('authStatus').textContent = message;
+}
+
+function initSupabase() {
+  try {
+    if (!window.supabase) {
+      setAuthStatus('Erro: biblioteca do Supabase não carregou.');
+      return;
+    }
+
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    setAuthStatus('Biblioteca carregada. Faça login ou teste a conexão.');
+  } catch (error) {
+    console.error(error);
+    setAuthStatus('Erro ao iniciar Supabase: ' + error.message);
+  }
+}
 
 function renderWorkouts() {
   const list = document.getElementById('workoutList');
@@ -153,7 +241,7 @@ document.getElementById('startWorkout').onclick = () => {
   const workout = data.workouts.find(w => w.id === id);
 
   if (!workout || workout.exercises.length === 0) {
-    return alert('Selecione um treino com exercícios.');
+    return alert('Selecione um treino com exercícios. Se a lista estiver vazia, vá em Treinos e clique em Adicionar treinos Full Body A-E.');
   }
 
   runState = {
@@ -310,10 +398,6 @@ document.getElementById('importData').onclick = () => {
   reader.readAsText(file);
 };
 
-function setAuthStatus(message) {
-  document.getElementById('authStatus').textContent = message;
-}
-
 function updateAuthInterface() {
   const logged = Boolean(currentUser);
 
@@ -323,10 +407,12 @@ function updateAuthInterface() {
   document.getElementById('authEmail').classList.toggle('hidden', logged);
   document.getElementById('authPassword').classList.toggle('hidden', logged);
 
-  setAuthStatus(logged ? `Conectado: ${currentUser.email}` : 'Não conectado.');
+  if (logged) setAuthStatus(`Conectado: ${currentUser.email}`);
 }
 
 document.getElementById('signupButton').onclick = async () => {
+  if (!supabase) return alert('Supabase não foi inicializado.');
+
   const email = document.getElementById('authEmail').value.trim();
   const password = document.getElementById('authPassword').value;
 
@@ -334,34 +420,92 @@ document.getElementById('signupButton').onclick = async () => {
     return alert('Informe um e-mail válido e uma senha com pelo menos 6 caracteres.');
   }
 
-  const { error } = await supabase.auth.signUp({ email, password });
+  setAuthStatus('Criando conta...');
 
-  if (error) return alert('Erro ao criar conta: ' + error.message);
-  alert('Conta criada! Confirme o e-mail, se o Supabase solicitar, e depois entre.');
+  try {
+    const { error } = await supabase.auth.signUp({ email, password });
+
+    if (error) {
+      console.error(error);
+      setAuthStatus('Erro: ' + error.message);
+      return alert('Erro ao criar conta: ' + error.message);
+    }
+
+    setAuthStatus('Conta criada. Confirme o e-mail, se solicitado.');
+    alert('Conta criada! Confirme o e-mail, se o Supabase solicitar, e depois entre.');
+  } catch (error) {
+    console.error(error);
+    setAuthStatus('Erro inesperado: ' + error.message);
+  }
 };
 
 document.getElementById('loginButton').onclick = async () => {
+  if (!supabase) return alert('Supabase não foi inicializado.');
+
   const email = document.getElementById('authEmail').value.trim();
   const password = document.getElementById('authPassword').value;
 
-  const { data: result, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (!email || !password) return alert('Informe e-mail e senha.');
 
-  if (error) return alert('Erro ao entrar: ' + error.message);
+  setAuthStatus('Conectando...');
 
-  currentUser = result.user;
-  updateAuthInterface();
-  alert('Login realizado!');
+  try {
+    const { data: result, error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      console.error(error);
+      setAuthStatus('Erro: ' + error.message);
+      return alert('Erro ao entrar: ' + error.message);
+    }
+
+    currentUser = result.user;
+    updateAuthInterface();
+    alert('Login realizado!');
+  } catch (error) {
+    console.error(error);
+    setAuthStatus('Erro inesperado: ' + error.message);
+  }
 };
 
 document.getElementById('logoutButton').onclick = async () => {
   await supabase.auth.signOut();
   currentUser = null;
   updateAuthInterface();
+  setAuthStatus('Não conectado.');
   alert('Você saiu da conta.');
 };
 
+document.getElementById('testConnection').onclick = async () => {
+  if (!supabase) {
+    setAuthStatus('Erro: Supabase não inicializado.');
+    return alert('A biblioteca do Supabase não carregou. Atualize a página com Ctrl+F5.');
+  }
+
+  setAuthStatus('Testando conexão...');
+
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const { error } = await supabase.from('app_data').select('user_id').limit(1);
+
+    if (error) {
+      console.error(error);
+      setAuthStatus('Conexão OK, mas erro na tabela: ' + error.message);
+      return alert('Conexão com Supabase OK, mas a tabela app_data precisa ser criada.\n\nErro: ' + error.message);
+    }
+
+    setAuthStatus(sessionData.session ? 'Conexão OK e usuário logado.' : 'Conexão OK. Faça login.');
+    alert('Conexão com o Supabase funcionando!');
+  } catch (error) {
+    console.error(error);
+    setAuthStatus('Erro de conexão: ' + error.message);
+  }
+};
+
 async function saveToCloud(showAlert = true) {
+  if (!supabase) return alert('Supabase não foi inicializado.');
   if (!currentUser) return alert('Entre na sua conta primeiro.');
+
+  setAuthStatus('Salvando na nuvem...');
 
   const { error } = await supabase
     .from('app_data')
@@ -371,14 +515,23 @@ async function saveToCloud(showAlert = true) {
       updated_at: new Date().toISOString()
     });
 
-  if (error) return alert('Erro ao salvar na nuvem: ' + error.message);
+  if (error) {
+    console.error(error);
+    setAuthStatus('Erro ao salvar: ' + error.message);
+    return alert('Erro ao salvar na nuvem: ' + error.message);
+  }
+
+  setAuthStatus(`Conectado: ${currentUser.email}`);
   if (showAlert) alert('Treinos e histórico salvos na nuvem!');
 }
 
 document.getElementById('saveCloud').onclick = () => saveToCloud(true);
 
 document.getElementById('loadCloud').onclick = async () => {
+  if (!supabase) return alert('Supabase não foi inicializado.');
   if (!currentUser) return alert('Entre na sua conta primeiro.');
+
+  setAuthStatus('Carregando da nuvem...');
 
   const { data: result, error } = await supabase
     .from('app_data')
@@ -386,9 +539,14 @@ document.getElementById('loadCloud').onclick = async () => {
     .eq('user_id', currentUser.id)
     .maybeSingle();
 
-  if (error) return alert('Erro ao carregar: ' + error.message);
+  if (error) {
+    console.error(error);
+    setAuthStatus('Erro ao carregar: ' + error.message);
+    return alert('Erro ao carregar: ' + error.message);
+  }
 
   if (!result || !result.data) {
+    setAuthStatus(`Conectado: ${currentUser.email}`);
     return alert('Nenhum backup encontrado na nuvem.');
   }
 
@@ -399,16 +557,33 @@ document.getElementById('loadCloud').onclick = async () => {
   renderWorkouts();
   renderSelect();
   renderHistory();
+  setAuthStatus(`Conectado: ${currentUser.email}`);
   alert('Dados carregados da nuvem!');
 };
 
 async function checkSession() {
-  const { data: result } = await supabase.auth.getSession();
-  currentUser = result.session?.user || null;
-  updateAuthInterface();
+  if (!supabase) return;
+
+  try {
+    const { data: result } = await supabase.auth.getSession();
+    currentUser = result.session?.user || null;
+    updateAuthInterface();
+
+    if (!currentUser) {
+      setAuthStatus('Biblioteca carregada. Faça login ou teste a conexão.');
+    }
+  } catch (error) {
+    console.error(error);
+    setAuthStatus('Erro ao verificar sessão: ' + error.message);
+  }
 }
+
+window.onerror = function(message) {
+  setAuthStatus('Erro no app: ' + message);
+};
 
 renderWorkouts();
 renderSelect();
 renderHistory();
+initSupabase();
 checkSession();
