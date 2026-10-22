@@ -1,110 +1,58 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>App Trainer</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>App Trainer</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="style.css">
+<style>.tab{display:none}.tab.active{display:block}.hidden{display:none!important}#startupStatus{padding:12px;color:#fcd34d}#restTimer{font-size:48px;text-align:center}</style>
 </head>
 <body>
-  <header>
-    <h1>App Trainer</h1>
-    <nav>
-      <button data-tab="workouts" class="active">Treinos</button>
-      <button data-tab="run">Treinar</button>
-      <button data-tab="records">Registros</button>
-      <button data-tab="history">Histórico</button>
-      <button data-tab="cloud">Nuvem</button>
-    </nav>
-  </header>
-
-  <main>
-    <datalist id="exerciseList"></datalist>
-
-    <section id="workouts" class="tab active">
-      <div class="card">
-        <h2>Novo treino</h2>
-        <input id="workoutName" placeholder="Nome do treino">
-        <button id="createWorkout">Criar treino</button>
-        <button id="addPresets">Adicionar treinos Full Body A-E</button>
-      </div>
-      <div id="workoutList"></div>
-    </section>
-
-    <section id="run" class="tab">
-      <div class="card">
-        <label for="selectWorkout">Escolha o treino</label>
-        <select id="selectWorkout"></select>
-        <button id="startWorkout">Iniciar treino</button>
-      </div>
-
-      <div id="runner" class="hidden">
-        <div class="card">
-          <h2 id="currentExercise"></h2>
-          <p id="currentInfo"></p>
-          <div id="timer">00:00</div>
-          <p id="timerLabel">Tempo do exercício</p>
-          <div class="run-buttons">
-            <button id="toggleTimer">Iniciar tempo</button>
-            <button id="completeSet">Série concluída</button>
-            <button id="skipExercise">Próximo exercício</button>
-            <button id="finishWorkout">Finalizar</button>
-          </div>
-        </div>
-
-        <div id="restCard" class="card hidden">
-          <h2>Descanso</h2>
-          <div id="restTimer">00:00</div>
-          <button id="skipRest">Pular descanso</button>
-        </div>
-      </div>
-    </section>
-
-    <section id="records" class="tab">
-      <div class="card">
-        <h2>Hoje</h2>
-        <p id="todayStats"></p>
-      </div>
-      <div class="card">
-        <h2>Últimos 7 dias</h2>
-        <p id="weekStats"></p>
-      </div>
-      <div class="card">
-        <h2>Exercícios por dia</h2>
-        <div id="dailyRecords"></div>
-      </div>
-    </section>
-
-    <section id="history" class="tab">
-      <div class="card">
-        <h2>Histórico</h2>
-        <button id="clearHistory">Limpar histórico</button>
-      </div>
-      <div id="historyList"></div>
-    </section>
-
-    <section id="cloud" class="tab">
-      <div class="card">
-        <h2>Conta na nuvem</h2>
-        <input id="authEmail" type="email" placeholder="E-mail">
-        <input id="authPassword" type="password" placeholder="Senha">
-        <button id="loginButton">Entrar</button>
-        <button id="signupButton">Criar conta</button>
-        <button id="logoutButton" class="hidden">Sair</button>
-        <button id="testConnection">Testar conexão</button>
-        <p id="authStatus">Carregando...</p>
-      </div>
-
-      <div class="card">
-        <h2>Sincronização</h2>
-        <button id="saveCloud">Salvar na nuvem</button>
-        <button id="loadCloud">Carregar da nuvem</button>
-      </div>
-    </section>
-  </main>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-  <script src="app.js?v=5"></script>
+<header><h1>App Trainer</h1><small>Versão 6 — diagnóstico de inicialização</small><nav>
+<button data-tab="workouts" class="active">Treinos</button>
+<button data-tab="run">Treinar</button>
+<button data-tab="records">Registros</button>
+<button data-tab="history">Histórico</button>
+<button data-tab="cloud">Nuvem</button>
+</nav></header>
+<p id="startupStatus" role="status">Inicializando aplicativo...</p>
+<main>
+<datalist id="exerciseList"></datalist>
+<section id="workouts" class="tab active">
+<div class="card"><h2>Novo treino</h2><input id="workoutName" placeholder="Nome do treino"><button id="createWorkout">Criar treino</button><button id="addPresets">Adicionar treinos Full Body A-E</button></div>
+<div id="workoutList"></div></section>
+<section id="run" class="tab">
+<div class="card"><label for="selectWorkout">Escolha o treino</label><select id="selectWorkout"></select><button id="startWorkout">Iniciar treino</button></div>
+<div id="runner" class="hidden"><div class="card"><h2 id="currentExercise"></h2><p id="currentInfo"></p><div id="timer">00:00</div><p id="timerLabel">Tempo do exercício</p><div class="run-buttons"><button id="toggleTimer">Iniciar tempo</button><button id="completeSet">Série concluída</button><button id="skipExercise">Próximo exercício</button><button id="finishWorkout">Finalizar</button></div></div>
+<div id="restCard" class="card hidden"><h2>Descanso</h2><div id="restTimer">00:00</div><button id="skipRest">Pular descanso</button></div></div></section>
+<section id="records" class="tab"><div class="card"><h2>Hoje</h2><p id="todayStats"></p></div><div class="card"><h2>Últimos 7 dias</h2><p id="weekStats"></p></div><div class="card"><h2>Exercícios por dia</h2><div id="dailyRecords"></div></div></section>
+<section id="history" class="tab"><div class="card"><h2>Histórico</h2><button id="clearHistory">Limpar histórico</button></div><div id="historyList"></div></section>
+<section id="cloud" class="tab"><div class="card"><h2>Conta na nuvem</h2><input id="authEmail" type="email" autocomplete="username" placeholder="E-mail"><input id="authPassword" type="password" autocomplete="current-password" placeholder="Senha"><button id="loginButton">Entrar</button><button id="signupButton">Criar conta</button><button id="logoutButton" class="hidden">Sair</button><button id="testConnection">Testar conexão</button><p id="authStatus" aria-live="polite">Aguardando inicialização...</p></div><div class="card"><h2>Sincronização</h2><button id="saveCloud">Salvar na nuvem</button><button id="loadCloud">Carregar da nuvem</button></div></section>
+</main>
+<script>
+window.trainerStartupFailed = false;
+window.trainerReportError = function(message) {
+  window.trainerStartupFailed = true;
+  document.getElementById('startupStatus').textContent = 'Falha: ' + message;
+  document.getElementById('authStatus').textContent = 'Falha: ' + message;
+};
+window.addEventListener('error', function(event) {
+  if (event.message) window.trainerReportError(event.message);
+  else if (event.target && event.target.tagName === 'SCRIPT') window.trainerReportError('Não foi possível carregar um script. Verifique a conexão.');
+}, true);
+window.addEventListener('unhandledrejection', function(event) {
+  window.trainerReportError(event.reason && event.reason.message || String(event.reason));
+});
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script type="module">
+try {
+  await import('./app.js?v=6');
+  if (!window.trainerStartupFailed) document.getElementById('startupStatus').textContent = 'Aplicativo iniciado — versão 6. Treinos e cronômetro disponíveis.';
+} catch (error) {
+  window.trainerReportError(error.message);
+}
+</script>
 </body>
 </html>
